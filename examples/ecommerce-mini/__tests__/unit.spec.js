@@ -52,6 +52,17 @@ describe('领域与服务单元测试', () => {
     assert.throws(() => orders.createOrder('u1'), /OUT_OF_STOCK/)
   })
 
+  it('结算流程 (checkout)', () => {
+    const p = catalog.addProduct({ name: 'Checkout Item', priceCents: 500, stock: 5 })
+    cart.addToCart('u2', p.id, 1)
+    const order = orders.checkout('u2')
+    
+    assert.ok(order.id)
+    assert.strictEqual(order.totalCents, 500)
+    assert.strictEqual(catalog.getProduct(p.id).stock, 4)
+    assert.strictEqual(cart.getCart('u2').items.length, 0)
+  })
+
   it('按ID查询单个商品', () => {
     const p = catalog.addProduct({ name: 'Single', priceCents: 999, stock: 5 })
     const found = catalog.getProduct(p.id)

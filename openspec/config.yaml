@@ -10,26 +10,32 @@ schema: spec-driven
 #   - platform-reqs
 
 context: |
-  Project: ecommerce-mini - A minimal e-commerce system demonstrating OpenSpec Spec-Driven Development.
-  Dual-language implementation: Node.js (v20+, zero npm dependencies) and Python (FastAPI + Pydantic).
-  Architecture: Layered (HTTP -> Service -> Domain -> Repository), single-process monolith.
-  Storage: In-memory Map (dev), file-based JSON persistence (prod, Node.js only).
-  API: RESTful JSON over native Node.js http module / FastAPI.
-  Code paths: examples/ecommerce-mini/ (Node.js), examples/ecommerce-mini-python/ (Python).
+  项目: ecommerce-mini - 一个展示 OpenSpec 规范驱动开发 (SDD) 的极简电商系统。
+  多技术栈实现: Node.js (v20+, 零 npm 依赖), Python (FastAPI + Pydantic), 以及 Vue (Vite + Vue 3)。
+  架构: 后端采用分层架构 (HTTP -> Service -> Domain -> Repository), 前端采用基于组件的架构。
+  存储: 开发环境使用内存 Map, 生产环境使用基于文件的 JSON 持久化 (仅限 Node.js)。
+  API: 基于原生 Node.js http 模块 / FastAPI 的 RESTful JSON 接口。
+  代码路径:
+    - examples/ecommerce-mini/ (Node.js)
+    - examples/ecommerce-mini-python/ (Python)
+    - examples/ecommerce-mini-frontend/ (Vue 前端)
 
 rules:
   proposal:
-    - Include SLO targets (latency, concurrency, quality) when relevant
-    - State which language implementations are affected (Node.js / Python / both)
-    - Include Capabilities section mapping to spec folder names
+    - 相关时包含 SLO 目标 (延迟、并发、质量)
+    - 说明受影响的实现版本 (Node.js / Python / Frontend / 全部)
+    - 包含映射到 spec 文件夹名称的 Capabilities 章节
   specs:
-    - Use Given/When/Then (Gherkin) format for all Scenarios
-    - Every Requirement must include Priority (P0/P1/P2) and Rationale
-    - Use SHALL or MUST for normative requirement language
+    - 所有场景使用 Given/When/Then (Gherkin) 格式
+    - 每个需求必须包含优先级 (P0/P1/P2) 和理由 (Rationale)
+    - 规范性需求语言使用 SHALL 或 MUST
   design:
-    - Include architecture diagrams (Mermaid or ASCII)
-    - Document key decisions with rationale and alternatives considered
+    - 包含架构图 (Mermaid 或 ASCII)
+    - 记录关键决策及其理由和考虑过的替代方案
+    - 对于前端，包含 UI 组件层级和状态管理方案
+    - 对于跨端功能，必须包含全链路 (E2E) 交互流程设计，明确前后端数据同步机制
   tasks:
-    - Indicate which implementation(s) each task applies to (Node.js / Python / both)
-    - Break tasks into small checkboxes using - [ ] format
-    - Order tasks by dependency
+    - 指出每个任务适用于哪个实现版本 (Node.js / Python / Frontend / 全部)
+    - 使用 - [ ] 格式将任务分解为小的复选框
+    - 按依赖关系排序任务
+    - 包含全链路验证 (E2E) 任务，特别是跨前后端的交互场景，确保数据同步和 CORS 等配置正确

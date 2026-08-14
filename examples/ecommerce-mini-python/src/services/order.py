@@ -55,3 +55,9 @@ class OrderService:
         self.cart_svc.clear_cart(user_id)
 
         return order
+
+    def checkout(self, user_id: str) -> Order:
+        """
+        结算入口，处理从购物车到订单的转换流程。
+        """
+        return self.create_order(user_id)

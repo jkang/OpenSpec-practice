@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Optional
 
@@ -9,6 +10,14 @@ from ..services.cart import CartService
 from ..services.order import OrderService
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # DI Setup
 product_repo = MemoryRepo[Product]()
@@ -63,6 +72,17 @@ def add_to_cart(req: AddToCartRequest):
 def create_order(req: CreateOrderRequest):
     try:
         return order_svc.create_order(req.userId)
+    except ValueError as e:
+        if str(e) == "CART_EMPTY":
+            raise HTTPException(status_code=400, detail="Cart is empty")
+        if str(e) == "OUT_OF_STOCK":
+            raise HTTPException(status_code=409, detail="Out of stock")
+        raise e
+
+@app.post("/api/checkout", status_code=200, response_model=Order)
+def checkout(req: CreateOrderRequest):
+    try:
+        return order_svc.checkout(req.userId)
     except ValueError as e:
         if str(e) == "CART_EMPTY":
             raise HTTPException(status_code=400, detail="Cart is empty")

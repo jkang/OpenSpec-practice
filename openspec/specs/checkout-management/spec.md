@@ -1,0 +1,47 @@
+# Checkout Management Specification
+
+## Overview
+
+结算管理能力负责处理用户从选择商品到确认购买的转换过程，确保购物车中的商品能够正确、安全地转化为系统中的正式订单，并维护交易的一致性。
+
+## Requirements
+
+### Requirement: 购物车结算触发
+
+系统 SHALL 提供一个接口或操作，允许用户发起结算。该操作必须包含当前购物车的标识或明细。
+
+**Priority**: P0 (Critical)
+
+**Rationale**: 用户需要一个明确的操作来发起购买流程。
+
+#### Scenario: 成功发起结算
+- **WHEN** 用户点击“去结算”并确认提交
+- **THEN** 系统验证购物车内容有效，并返回结算成功及生成的订单号
+
+---
+
+### Requirement: 结算数据转换
+
+在结算过程中，系统 MUST 将购物车中的每一项商品（Product ID, Quantity, Unit Price）转换为订单项（OrderItem），并根据当前价格重新计算总价。
+
+**Priority**: P0 (Critical)
+
+**Rationale**: 确保购物车中的商品、价格和数量能够准确无误地映射到订单中。
+
+#### Scenario: 购物车转订单项
+- **WHEN** 系统处理结算请求时
+- **THEN** 生成的订单项数量与购物车项一致，且价格采用结算时刻的系统价格
+
+---
+
+### Requirement: 结算后状态维护
+
+系统 SHALL 在订单成功生成后，自动清空对应的购物车内容或标记该购物车为已结算。
+
+**Priority**: P1 (High)
+
+**Rationale**: 结算完成后，购物车不应再包含已购买的商品。
+
+#### Scenario: 结算后清空购物车
+- **WHEN** 结算流程成功结束并生成订单后
+- **THEN** 再次查询该购物车时，结果应当为空

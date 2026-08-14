@@ -1,10 +1,10 @@
-# CLAUDE.md
+# AGENTS.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to AI Agents when working with code in this repository.
 
 ## Project Overview
 
-This is **OpenSpec Practise** — a learning and demonstration repository for **Spec-Driven Development (SDD)** using the OpenSpec framework (v1.5.0). It contains a minimal e-commerce system implemented in both Node.js and Python, all driven by OpenSpec specifications. The core idea: define specifications first (proposal → design → specs → tasks), then write code, ensuring humans and AI share the same understanding of requirements.
+This is **OpenSpec Practise** — a learning and demonstration repository for **Spec-Driven Development (SDD)** using the OpenSpec framework (v1.5.0). It contains a minimal e-commerce system implemented in Node.js, Python, and Vue, all driven by OpenSpec specifications. The core idea: define specifications first (proposal → design → specs → tasks), then write code, ensuring humans and AI share the same understanding of requirements.
 
 ## Repository Architecture
 
@@ -13,7 +13,7 @@ docs/                          # Chinese documentation (manuals, guides, analysi
 docs-en/                       # English documentation (same content, translated)
 openspec/                      # Root OpenSpec configuration for this project
   config.yaml                  #   Project context, rules, schema definition
-.claude/                       # Claude Code native AI commands and skills (v1.5.0)
+.claude/                       # OpenSpec native AI commands and skills (v1.5.0)
   commands/opsx/               #   /opsx:propose, /opsx:apply, /opsx:archive, /opsx:explore, /opsx:sync
   skills/                      #   Corresponding skill definitions (SKILL.md)
 examples/
@@ -31,7 +31,11 @@ examples/
     src/api/server.py          #   FastAPI app with all endpoints
     src/repo/memory.py         #   Generic MemoryRepo[T]
     tests/test_smoke.py        #   Pytest smoke/integration tests via TestClient
-  openspec/                    # Root: specifications driving both implementations
+  ecommerce-mini-frontend/     # Vue implementation (Vite + Vue 3)
+    src/App.vue                #   Main UI component (Single-screen, flat design)
+    src/main.js                #   App entry point
+    package.json               #   Project dependencies and scripts
+  openspec/                    # Root: specifications driving all implementations
     config.yaml                #   Project context, rules, store/references support (v1.5.0)
     specs/                     #   Master specs: cart/catalog/order/payment/domain-model/error-handling
     changes/                   #   Active changes
@@ -40,26 +44,22 @@ examples/
 
 ## Layered Architecture
 
-Both implementations follow the same four-layer architecture with strict dependency direction:
+The project follows a consistent architecture across stacks:
 
-```text
-HTTP Layer ──► Service Layer ──► Domain Layer
-                    │
-                    └──► Repository Layer ──► Data Store (Map / File)
-```
+- **Backend**: Four-layer (HTTP -> Service -> Domain -> Repository) with strict dependency direction.
+- **Frontend**: Component-based architecture using Vue 3 Composition API.
 
-| Layer      | Node.js dir                 | Python dir      | Responsibility                                                                                       |
-| ---------- | --------------------------- | --------------- | ---------------------------------------------------------------------------------------------------- |
-| HTTP       | `src/http/`                 | `src/api/`      | Route handling, JSON parse/format, error→HTTP status mapping                                         |
-| Service    | `src/services/`             | `src/services/` | Use-case orchestration (createOrder: validate cart → check stock → deduct → save order → clear cart) |
-| Domain     | `src/domain/`               | `src/domain/`   | Pure entities/types with no dependencies (JSDoc typedefs / Pydantic models)                          |
-| Repository | `src/repo/`, `src/persist/` | `src/repo/`     | Data access; `Map` in dev, `FileStore` in prod (Node.js only)                                        |
+| Stack      | Directory                   | Responsibility                                                                                       |
+| ---------- | --------------------------- | ---------------------------------------------------------------------------------------------------- |
+| Node.js    | `src/http/`, `src/services/`| Native HTTP server, zero-dependency domain logic, file-based persistence.                             |
+| Python     | `src/api/`, `src/services/` | FastAPI-based REST API, Pydantic models, in-memory repository.                                        |
+| Vue (Web)  | `src/App.vue`               | Minimalist flat UI, component-level state, single-screen layout.                                      |
 
 Key design decisions:
 
 - All prices in **integer cents** (`priceCents`) to avoid floating-point issues.
-- Node.js uses native `http` module (zero dependencies); Python uses FastAPI for type safety and auto-docs.
-- MVP uses in-memory storage with single-threaded atomicity; prod extends with file persistence.
+- UI adheres to **modern flat aesthetic**: 1px borders, solid backgrounds, no gradients/shadows.
+- Single-screen display layout for frontend components.
 
 ## Common Commands
 
@@ -77,6 +77,14 @@ npm run start:prod    # Prod server on port 3002 (file persistence + JWT auth)
 pip install -r requirements.txt   # Install FastAPI, Pydantic, pytest, httpx, uvicorn
 pytest                            # Run test suite (smoke + out-of-stock)
 python -m uvicorn src.api.server:app --reload   # Dev server on port 8000
+```
+
+### Vue Frontend (`examples/ecommerce-mini-frontend/`)
+
+```bash
+npm install           # Install dependencies
+npm run dev           # Start Vite dev server on port 5173
+npm run build         # Build for production
 ```
 
 ## OpenSpec SDD Workflow (v1.5.0)

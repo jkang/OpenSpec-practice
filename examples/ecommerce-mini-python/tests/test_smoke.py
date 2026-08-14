@@ -39,6 +39,36 @@ def test_smoke_flow():
     # Here we just rely on previous steps success
 
 
+def test_checkout_flow():
+    user_id = "user_checkout"
+    # 1. Add Product
+    res = client.post("/api/products", json={
+        "name": "Checkout Item",
+        "priceCents": 300,
+        "stock": 5
+    })
+    pid = res.json()["id"]
+
+    # 2. Add to Cart
+    client.post("/api/cart/items", json={
+        "userId": user_id,
+        "productId": pid,
+        "quantity": 1
+    })
+
+    # 3. Checkout
+    res = client.post("/api/checkout", json={
+        "userId": user_id
+    })
+    assert res.status_code == 200
+    order = res.json()
+    assert order["totalCents"] == 300
+
+    # 4. Verify stock and empty cart
+    res = client.get(f"/api/products/{pid}")
+    assert res.json()["stock"] == 4
+
+
 def test_out_of_stock():
     user_id = "user_2"
     # Add product with stock of 5

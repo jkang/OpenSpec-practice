@@ -38,7 +38,13 @@
           <span class="summary-label">总计：</span>
           <span class="summary-total">¥{{ cartTotal.toFixed(2) }}</span>
         </div>
-        <button class="checkout-btn">去结算</button>
+        <button 
+          class="checkout-btn" 
+          :disabled="isProcessing" 
+          @click="checkout"
+        >
+          {{ isProcessing ? '结算中...' : '去结算' }}
+        </button>
       </div>
     </div>
   </div>
@@ -59,19 +65,40 @@ const products = ref([
 
 // 购物车状态
 const cart = ref([])
+const isProcessing = ref(false)
 
 // 添加到购物车
-const addToCart = (product) => {
-  const existingItem = cart.value.find(item => item.id === product.id)
-  if (existingItem) {
-    existingItem.quantity++
-  } else {
-    cart.value.push({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      quantity: 1
+const addToCart = async (product) => {
+  try {
+    // 同步到后端
+    const response = await fetch('http://localhost:3000/api/cart/items', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        productId: String(product.id),
+        quantity: 1
+      })
     })
+
+    if (!response.ok) {
+      const err = await response.json()
+      throw new Error(err.message || '同步失败')
+    }
+
+    // 更新本地状态
+    const existingItem = cart.value.find(item => item.id === product.id)
+    if (existingItem) {
+      existingItem.quantity++
+    } else {
+      cart.value.push({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        quantity: 1
+      })
+    }
+  } catch (e) {
+    alert(`加入购物车失败: ${e.message}`)
   }
 }
 
@@ -91,6 +118,36 @@ const removeFromCart = (productId) => {
 const cartTotal = computed(() => {
   return cart.value.reduce((total, item) => total + item.price * item.quantity, 0)
 })
+
+// 结算方法
+const checkout = async () => {
+  if (cart.value.length === 0) return
+
+  isProcessing.value = true
+  try {
+    // 假设后端运行在 3000 端口
+    const response = await fetch('http://localhost:3000/api/checkout', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ userId: 'user_dev' })
+    })
+
+    if (response.ok) {
+      const order = await response.json()
+      alert(`结算成功！订单号: ${order.id}`)
+      cart.value = [] // 清空购物车
+    } else {
+      const error = await response.json()
+      alert(`结算失败: ${error.message || '未知错误'}`)
+    }
+  } catch (e) {
+    alert(`网络错误: ${e.message}`)
+  } finally {
+    isProcessing.value = false
+  }
+}
 </script>
 
 <style scoped>
@@ -289,7 +346,12 @@ const cartTotal = computed(() => {
   width: 100%;
 }
 
-.checkout-btn:hover {
+.checkout-btn:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.checkout-btn:hover:not(:disabled) {
   background-color: #333;
 }
 

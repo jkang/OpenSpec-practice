@@ -57,7 +57,7 @@ Then 该条目从购物车中移除
 
 **Priority**: P2 (Medium)
 
-**Rationale**: 防止恶意刷单和异常数据，保护系统稳定性。
+**Rationale**: 防止恶意刷单 and 异常数据，保护系统稳定性。
 
 #### Scenario: 添加商品数量在限制内
 
@@ -78,3 +78,17 @@ Given 购物车中某商品数量为 50
 When 尝试再添加该商品数量为 50
 Then 抛出 MAX_QUANTITY_EXCEEDED 错误
 And 购物车中该商品数量保持 50
+
+---
+
+### Requirement: 购物车清空
+
+系统 SHALL 提供清空整个购物车的功能，移除其中所有的商品项。
+
+**Priority**: P1 (High)
+
+**Rationale**: 结算完成后或用户主动要求时，需要一键清空购物车。
+
+#### Scenario: 结算成功后自动清空
+- **WHEN** 收到结算成功的信号时
+- **THEN** 系统 MUST 移除该用户购物车中的所有商品项

@@ -173,6 +173,7 @@ What would you like to do?
 - Pause on errors, blockers, or unclear requirements - don't guess
 - When a task needs work beyond what the spec describes, surface the added scope and pause - never silently narrow, defer, or simplify away specified behavior
 - Only mark a task `- [x]` when its specified behavior is fully implemented, not when it is partially done or deferred
+- **全链路验证**: 在标记 E2E 验证任务为完成前，必须确保前端能正确调用后端 API，且跨域 (CORS) 和数据同步均已调通
 - Use contextFiles from CLI output, don't assume specific file names
 - Do not use context or operation guidance as proof that a task is complete
 - Apply relevant project context; report conflicts with controlling workflow inputs

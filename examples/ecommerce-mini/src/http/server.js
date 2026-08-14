@@ -8,6 +8,17 @@ const productRepo = new ProductRepo()
 const cartRepo = new CartRepo()
 const orderRepo = new OrderRepo()
 
+// 注入初始商品数据，确保与前端同步
+const initialProducts = [
+  { id: '1', name: '极简机械键盘', description: '84键紧凑布局，红轴', priceCents: 29900, stock: 99 },
+  { id: '2', name: '无线办公鼠标', description: '静音按键，人体工学设计', priceCents: 8900, stock: 99 },
+  { id: '3', name: '高清显示器', description: '27英寸 4K分辨率', priceCents: 129900, stock: 99 },
+  { id: '4', name: '桌面收纳架', description: '实木材质，双层结构', priceCents: 4500, stock: 99 },
+  { id: '5', name: '铝合金笔记本支架', description: '折叠便携，多档调节', priceCents: 6800, stock: 99 },
+  { id: '6', name: '桌面拾音氛围灯', description: 'RGB色彩，支持音频同步', priceCents: 12800, stock: 99 }
+]
+initialProducts.forEach(p => productRepo.save(p))
+
 const catalogService = new CatalogService(productRepo)
 const cartService = new CartService(cartRepo, productRepo)
 const orderService = new OrderService(cartRepo, orderRepo, productRepo)
@@ -27,16 +38,38 @@ const readJson = async (req) => {
 }
 
 const sendJson = (res, status, data) => {
-  res.writeHead(status, { 'Content-Type': 'application/json' })
+  res.writeHead(status, { 
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  })
   res.end(JSON.stringify(data))
 }
 
 const sendError = (res, code, message, status = 500) => {
-  sendJson(res, status, { code, message })
+  res.writeHead(status, { 
+    'Content-Type': 'application/json',
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type'
+  })
+  res.end(JSON.stringify({ code, message }))
 }
 
 export function createServer() {
   const server = http.createServer(async (req, res) => {
+    // Handle CORS preflight
+    if (req.method === 'OPTIONS') {
+      res.writeHead(204, {
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+        'Access-Control-Allow-Headers': 'Content-Type'
+      })
+      res.end()
+      return
+    }
+
     const url = new URL(req.url, `http://${req.headers.host}`)
     const pathname = url.pathname
 
@@ -74,6 +107,13 @@ export function createServer() {
         const userId = body.userId || 'user_dev'
         const order = orderService.createOrder(userId)
         return sendJson(res, 201, order)
+      }
+
+      if (pathname === '/api/checkout' && req.method === 'POST') {
+        const body = await readJson(req)
+        const userId = body.userId || 'user_dev'
+        const order = orderService.checkout(userId)
+        return sendJson(res, 200, order)
       }
       
       if (pathname.startsWith('/api/orders/') && req.method === 'GET') {
