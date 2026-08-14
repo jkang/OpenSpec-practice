@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>结账成功原型 - Modern Flat Design</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #ffffff;
+            color: #0f172a; /* slate-900 */
+        }
+        .flat-border {
+            border: 1px solid #e2e8f0; /* slate-200 */
+        }
+        [v-cloak] {
+            display: none;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen">
+
+<div id="app" v-cloak class="w-full max-w-md p-6">
+    <!-- 主界面：模拟购物车结算 -->
+    <div class="space-y-6">
+        <header class="pb-4 flat-border border-t-0 border-x-0 border-b">
+            <h1 class="text-xl font-bold tracking-tight">确认结账</h1>
+        </header>
+
+        <div class="space-y-4">
+            <div class="flex justify-between items-center py-2">
+                <span class="text-slate-500">商品小计</span>
+                <span class="font-medium">¥ 299.00</span>
+            </div>
+            <div class="flex justify-between items-center py-2">
+                <span class="text-slate-500">运费</span>
+                <span class="font-medium">¥ 0.00</span>
+            </div>
+            <div class="flex justify-between items-center pt-4 flat-border border-t-0 border-x-0 border-b-0 border-t">
+                <span class="text-lg font-bold">总计</span>
+                <span class="text-lg font-bold text-slate-900">¥ 299.00</span>
+            </div>
+        </div>
+
+        <button 
+            @click="handleCheckout"
+            :disabled="isLoading"
+            class="w-full py-3 px-4 bg-slate-900 text-white font-semibold transition-all hover:bg-slate-800 disabled:bg-slate-300 flex items-center justify-center gap-2"
+        >
+            <span v-if="isLoading" class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></span>
+            {{ isLoading ? '正在处理...' : '立即结账' }}
+        </button>
+    </div>
+
+    <!-- 成功通知模态框 -->
+    <div v-if="showSuccess" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-sm">
+        <div class="w-full max-w-xs bg-white flat-border p-8 space-y-6 text-center">
+            <!-- 成功图标 -->
+            <div class="flex justify-center">
+                <i data-lucide="check-circle" class="w-12 h-12 text-slate-900"></i>
+            </div>
+
+            <!-- 文字信息 -->
+            <div class="space-y-2">
+                <h2 class="text-lg font-bold text-slate-900">订单提交成功</h2>
+                <p class="text-sm text-slate-500">感谢您的购买，我们将尽快为您发货。</p>
+            </div>
+
+            <!-- 订单号 -->
+            <div class="py-2 px-3 bg-slate-50 flat-border border-dashed border-slate-300">
+                <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">订单编号</p>
+                <p class="text-sm font-mono font-bold text-slate-900">#ORD-2026-814-XYZ</p>
+            </div>
+
+            <!-- 操作按钮 -->
+            <button 
+                @click="resetState"
+                class="w-full py-2 px-4 flat-border border-slate-900 text-slate-900 font-semibold hover:bg-slate-50 transition-colors"
+            >
+                继续购物
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const { createApp, ref, onMounted, nextTick } = Vue;
+
+    createApp({
+        setup() {
+            const isLoading = ref(false);
+            const showSuccess = ref(false);
+
+            const handleCheckout = () => {
+                isLoading.value = true;
+                // 模拟网络请求延迟
+                setTimeout(() => {
+                    isLoading.value = false;
+                    showSuccess.value = true;
+                    // 在模态框显示后渲染图标
+                    nextTick(() => {
+                        lucide.createIcons();
+                    });
+                }, 1500);
+            };
+
+            const resetState = () => {
+                showSuccess.value = false;
+                isLoading.value = false;
+            };
+
+            onMounted(() => {
+                lucide.createIcons();
+            });
+
+            return {
+                isLoading,
+                showSuccess,
+                handleCheckout,
+                resetState
+            };
+        }
+    }).mount('#app');
+</script>
+
+</body>
+</html>

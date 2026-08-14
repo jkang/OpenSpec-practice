@@ -116,6 +116,36 @@
         </div>
       </aside>
     </main>
+
+    <!-- 成功通知模态框 -->
+    <div v-if="isCheckoutSuccess" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-white/80 backdrop-blur-sm">
+      <div class="w-full max-w-xs bg-white border border-slate-200 p-8 space-y-6 text-center">
+        <!-- 成功图标 -->
+        <div class="flex justify-center">
+          <CheckCircle class="w-12 h-12 text-slate-900" />
+        </div>
+
+        <!-- 文字信息 -->
+        <div class="space-y-2">
+          <h2 class="text-lg font-bold text-slate-900">订单提交成功</h2>
+          <p class="text-sm text-slate-500">感谢您的购买，我们将尽快为您发货。</p>
+        </div>
+
+        <!-- 订单号 -->
+        <div class="py-2 px-3 bg-slate-50 border border-slate-200 border-dashed">
+          <p class="text-xs text-slate-400 uppercase tracking-wider mb-1">订单编号</p>
+          <p class="text-sm font-mono font-bold text-slate-900">#{{ lastOrderId }}</p>
+        </div>
+
+        <!-- 操作按钮 -->
+        <button 
+          @click="resetCheckoutState"
+          class="w-full py-2 px-4 border border-slate-900 text-slate-900 font-semibold hover:bg-slate-50 transition-colors uppercase text-xs tracking-widest"
+        >
+          继续购物
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -128,7 +158,8 @@ import {
   X, 
   ShoppingCart, 
   Trash2, 
-  SearchX 
+  SearchX,
+  CheckCircle
 } from '@lucide/vue'
 
 // 状态管理
@@ -137,6 +168,8 @@ const cart = ref([])
 const searchQuery = ref('')
 const isCartOpen = ref(true)
 const isProcessing = ref(false)
+const isCheckoutSuccess = ref(false)
+const lastOrderId = ref('')
 
 // 图片加载失败处理
 const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?auto=format&fit=crop&q=80&w=400'
@@ -234,7 +267,8 @@ const checkout = async () => {
 
     if (response.ok) {
       const order = await response.json()
-      alert(`结算成功！订单号: ${order.id}`)
+      lastOrderId.value = order.id
+      isCheckoutSuccess.value = true
       cart.value = []
     } else {
       const error = await response.json()
@@ -245,6 +279,11 @@ const checkout = async () => {
   } finally {
     isProcessing.value = false
   }
+}
+
+const resetCheckoutState = () => {
+  isCheckoutSuccess.value = false
+  lastOrderId.value = ''
 }
 
 onMounted(fetchProducts)
