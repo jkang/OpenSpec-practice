@@ -1,4 +1,5 @@
 schema: spec-driven
+schemas_dir: ./schemas
 
 # === v1.5.0: Store 指针 (可选) ===
 # 当规划需要跨多个代码仓库时，可将规划集中在一个独立的 store 仓库中。
@@ -25,14 +26,21 @@ rules:
     - 相关时包含 SLO 目标 (延迟、并发、质量)
     - 说明受影响的实现版本 (Node.js / Python / Frontend / 全部)
     - 包含映射到 spec 文件夹名称的 Capabilities 章节
+  prototype:
+    - 必须为可交互的 HTML，使用 Vue 3 (CDN) 和 Tailwind CSS (CDN)
+    - 采用 Modern Flat 风格：无阴影、无渐变、使用 1px 边框 (`border-border`)
+    - 使用类似 Shadcn UI 的企业级组件规范设计（Buttons, Cards, Inputs）
+    - 采用单屏紧凑布局，由内容决定大小，避免全局浮动元素
+    - 隐藏进度指示器、状态勾选标记和追踪指标，保持界面极简整洁
   specs:
     - 所有场景使用 Given/When/Then (Gherkin) 格式
     - 每个需求必须包含优先级 (P0/P1/P2) 和理由 (Rationale)
     - 规范性需求语言使用 SHALL 或 MUST
+    - 对于有前端 UI 的需求，必须从生成的 prototype.html 中提取交互逻辑记录为 Scenario，并使用 <details> 标签嵌入原型代码
   design:
     - 包含架构图 (Mermaid 或 ASCII)
     - 记录关键决策及其理由和考虑过的替代方案
-    - 对于前端，包含 UI 组件层级和状态管理方案
+    - 对于前端，包含 UI 组件层级和状态管理方案 (必须与确认后的 prototype 完全对齐)
     - 对于跨端功能，必须包含全链路 (E2E) 交互流程设计，明确前后端数据同步机制
   tasks:
     - 指出每个任务适用于哪个实现版本 (Node.js / Python / Frontend / 全部)

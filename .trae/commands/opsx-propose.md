@@ -9,6 +9,7 @@ Propose a new change - create the change and generate all artifacts in one step.
 
 I'll create a change with the artifacts your schema defines. With the default spec-driven schema that is:
 - proposal.md (what & why)
+- `prototypes/<capability-path>.html` (interactive UI/UX validation)
 - `specs/<capability-path>/spec.md` (what the system must do - a delta, not the main spec)
 - design.md (how)
 - tasks.md (implementation steps)
@@ -95,9 +96,17 @@ When the user is ready to implement, they must start the apply workflow explicit
       - Apply `context` and `rules` as constraints - but do NOT copy them into the file
       - Show brief progress: "Created <artifact-id>"
 
-   b. **Continue until every artifact in the required set exists (not just `apply.requires`)**
+   b. **Interactive Prototype Validation Checkpoint**
+      - After generating `prototype` and `specs`, BUT BEFORE generating `design` and `tasks`, you MUST pause the workflow.
+      - Invoke the `NotifyUser` or `AskUserQuestion` tool to prompt the user:
+        > "原型设计 (prototypes/) 和交互规范 (specs/) 已生成。请通过浏览器或 OpenPreview 查看并验证。是否确认并继续生成技术设计 (design.md)？"
+      - Wait for the user's explicit approval.
+      - If the user requests changes, update the prototype and specs accordingly, and ask for approval again.
+      - ONLY proceed to step (c) after the user explicitly approves.
+
+   c. **Continue until every artifact in the required set exists (not just `apply.requires`)**
       - After creating each artifact, re-run `openspec status --change "<name>" --json`
-      - The required set is `applyRequires` plus every artifact reachable from those by following the `requires` edges in `status --json` - walk them transitively (spec-driven closes over proposal, specs, design, tasks). Leave artifacts outside that set alone
+      - The required set is `applyRequires` plus every artifact reachable from those by following the `requires` edges in `status --json` - walk them transitively (spec-driven closes over proposal, prototype, specs, design, tasks). Leave artifacts outside that set alone
       - `status` is file-existence only, so an `applyRequires` artifact reading `done` does NOT mean its dependencies exist - writing `tasks.md` early marks `tasks` done while `specs` was never written. Use each artifact's `requires` edges, not its `status`, to build the required set: a `done` artifact still lists what it depends on
       - An artifact already reading `status: "skipped"` is satisfied: the change declares `skip_specs` in `.openspec.yaml`, so its files must NOT exist. Never try to create one
       - Create every artifact in the required set that is missing, then re-check - creating one can unblock others
@@ -105,7 +114,7 @@ When the user is ready to implement, they must start the apply workflow explicit
       - Dependencies are enablers, not gates: if a required artifact is still `blocked` only because you skipped a conditional dependency, write it anyway
       - Stop when every artifact in the required set is `done`, `skipped`, or was deliberately skipped
 
-   c. **If an artifact requires user input** (unclear context):
+   d. **If an artifact requires user input** (unclear context):
       - Ask the user to clarify
       - Then continue with creation
 
