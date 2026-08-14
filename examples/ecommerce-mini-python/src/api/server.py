@@ -28,6 +28,18 @@ catalog_svc = CatalogService(product_repo)
 cart_svc = CartService(cart_repo, catalog_svc)
 order_svc = OrderService(order_repo, cart_svc, catalog_svc)
 
+# 注入初始商品数据，确保与 Node.js 后端同步
+initial_products = [
+    { "id": "1", "name": "极简机械键盘", "priceCents": 29900, "stock": 99, "imageUrl": "https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&q=80&w=800" },
+    { "id": "2", "name": "无线办公鼠标", "priceCents": 8900, "stock": 99, "imageUrl": "https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800" },
+    { "id": "3", "name": "高清显示器", "priceCents": 129900, "stock": 99, "imageUrl": "https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=800" },
+    { "id": "4", "name": "桌面收纳架", "priceCents": 4500, "stock": 99, "imageUrl": "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800" },
+    { "id": "5", "name": "铝合金笔记本支架", "priceCents": 6800, "stock": 99, "imageUrl": "https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?auto=format&fit=crop&q=80&w=800" },
+    { "id": "6", "name": "桌面拾音氛围灯", "priceCents": 12800, "stock": 99, "imageUrl": "https://images.unsplash.com/photo-1550745165-9bc0b252728f?auto=format&fit=crop&q=80&w=800" }
+]
+for p in initial_products:
+    product_repo.save(p["id"], Product(**p))
+
 # DTOs
 class AddProductRequest(BaseModel):
     name: str

@@ -1,83 +1,190 @@
 <template>
-  <div class="app-container">
-    <!-- 左侧：商品列表 -->
-    <div class="product-section">
-      <h2 class="section-title">商品列表</h2>
-      <div class="product-grid">
-        <div v-for="product in products" :key="product.id" class="product-card">
-          <div class="product-info">
-            <h3 class="product-name">{{ product.name }}</h3>
-            <p class="product-desc">{{ product.description }}</p>
-            <span class="product-price">¥{{ product.price.toFixed(2) }}</span>
-          </div>
-          <button class="action-btn" @click="addToCart(product)">加入购物车</button>
-        </div>
+  <div class="h-screen flex flex-col overflow-hidden bg-white text-slate-900 font-sans">
+    <!-- 顶部导航 -->
+    <header class="h-16 flex-shrink-0 border-b border-slate-200 flex items-center justify-between px-8 bg-white z-10">
+      <div class="flex items-center gap-2">
+        <div class="w-8 h-8 bg-slate-900 flex items-center justify-center text-white text-xs font-bold">M</div>
+        <h1 class="text-lg font-semibold tracking-tight uppercase">Minimal Store</h1>
       </div>
-    </div>
-
-    <!-- 右侧：购物车 -->
-    <div class="cart-section">
-      <h2 class="section-title">购物车</h2>
-      <div v-if="cart.length === 0" class="empty-cart">
-        购物车为空
-      </div>
-      <div v-else class="cart-items">
-        <div class="cart-list">
-          <div v-for="item in cart" :key="item.id" class="cart-item">
-            <div class="cart-item-info">
-              <h4 class="cart-item-name">{{ item.name }}</h4>
-              <div class="cart-item-meta">
-                <span class="cart-item-price">¥{{ item.price.toFixed(2) }}</span>
-                <span class="cart-item-qty">x {{ item.quantity }}</span>
-              </div>
-            </div>
-            <button class="remove-btn" @click="removeFromCart(item.id)">移除</button>
-          </div>
-        </div>
-        <div class="cart-summary">
-          <span class="summary-label">总计：</span>
-          <span class="summary-total">¥{{ cartTotal.toFixed(2) }}</span>
-        </div>
-        <button 
-          class="checkout-btn" 
-          :disabled="isProcessing" 
-          @click="checkout"
+      
+      <div class="flex-1 max-w-md mx-8 relative">
+        <Search class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+        <input 
+          v-model="searchQuery"
+          type="text" 
+          placeholder="搜索商品..." 
+          class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-none focus:outline-none focus:border-slate-400 transition-colors text-sm"
         >
-          {{ isProcessing ? '结算中...' : '去结算' }}
+      </div>
+
+      <div class="flex items-center gap-6 text-sm font-medium">
+        <button @click="isCartOpen = !isCartOpen" class="relative">
+          <ShoppingBag class="w-5 h-5" />
+          <span v-if="cartTotalItems > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-slate-900 text-white text-[10px] flex items-center justify-center">
+            {{ cartTotalItems }}
+          </span>
         </button>
       </div>
-    </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-1 flex overflow-hidden">
+      <!-- 左侧商品网格 -->
+      <section class="flex-1 overflow-y-auto p-8 bg-slate-50 scrollbar-hide">
+        <div v-if="filteredProducts.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-4">
+          <SearchX class="w-12 h-12 stroke-1" />
+          <p class="text-sm">未找到相关商品</p>
+        </div>
+        <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div 
+            v-for="product in filteredProducts" 
+            :key="product.id"
+            class="bg-white border border-slate-200 group transition-colors hover:border-slate-400 flex flex-col"
+          >
+            <div class="aspect-[4/3] overflow-hidden bg-slate-100 border-b border-slate-200 relative">
+              <img 
+                :src="product.imageUrl" 
+                :alt="product.name"
+                class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                @error="handleImageError"
+                loading="lazy"
+              >
+            </div>
+            <div class="p-5 flex flex-col gap-4 flex-1">
+              <div class="flex justify-between items-start">
+                <div class="flex-1 min-w-0 pr-2">
+                  <h3 class="font-medium text-slate-900 truncate">{{ product.name }}</h3>
+                  <p class="text-xs text-slate-500 mt-1 line-clamp-2">{{ product.description }}</p>
+                </div>
+                <span class="font-semibold text-sm whitespace-nowrap">¥{{ (product.priceCents / 100).toFixed(2) }}</span>
+              </div>
+              <button 
+                @click="addToCart(product)"
+                class="mt-auto w-full py-2 bg-slate-900 text-white text-xs font-bold tracking-widest uppercase hover:bg-slate-800 transition-colors flex items-center justify-center gap-2"
+              >
+                <Plus class="w-3 h-3" />
+                加入购物车
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 右侧购物车侧边栏 -->
+      <aside 
+        :class="['w-80 flex-shrink-0 bg-white border-l border-slate-200 flex flex-col transition-all duration-300 transform', isCartOpen ? 'translate-x-0' : 'translate-x-full absolute right-0 h-full shadow-2xl z-20 md:relative md:translate-x-0 md:shadow-none']"
+      >
+        <div class="p-6 border-b border-slate-200 flex items-center justify-between">
+          <h2 class="font-semibold tracking-tight">购物车 ({{ cartTotalItems }})</h2>
+          <button @click="isCartOpen = false" class="md:hidden"><X class="w-4 h-4 text-slate-400" /></button>
+        </div>
+
+        <div class="flex-1 overflow-y-auto p-6 scrollbar-hide space-y-6">
+          <div v-if="cart.length === 0" class="h-full flex flex-col items-center justify-center text-slate-400 space-y-2">
+            <ShoppingCart class="w-8 h-8 stroke-1" />
+            <p class="text-xs">购物车是空的</p>
+          </div>
+          <div v-for="item in cart" :key="item.id" class="flex gap-4">
+            <div class="w-16 h-16 flex-shrink-0 border border-slate-200 bg-slate-50 overflow-hidden">
+              <img :src="item.imageUrl" class="w-full h-full object-cover" @error="handleImageError">
+            </div>
+            <div class="flex-1 flex flex-col justify-between py-1">
+              <div class="flex justify-between">
+                <h4 class="text-xs font-medium truncate pr-2">{{ item.name }}</h4>
+                <button @click="removeFromCart(item.id)"><Trash2 class="w-3 h-3 text-slate-300 hover:text-red-500" /></button>
+              </div>
+              <div class="flex justify-between items-end">
+                <span class="text-xs font-semibold">¥{{ (item.priceCents * item.quantity / 100).toFixed(2) }}</span>
+                <span class="text-[10px] text-slate-400 text-right">x {{ item.quantity }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-6 border-t border-slate-200">
+          <div class="flex justify-between mb-4">
+            <span class="text-xs text-slate-500">总计</span>
+            <span class="font-bold text-lg">¥{{ (cartTotalPrice / 100).toFixed(2) }}</span>
+          </div>
+          <button 
+            @click="checkout"
+            :disabled="isProcessing || cart.length === 0"
+            class="w-full py-3 bg-slate-900 text-white text-xs font-bold tracking-[0.2em] uppercase hover:bg-slate-800 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors"
+          >
+            {{ isProcessing ? '结算中...' : '结算' }}
+          </button>
+        </div>
+      </aside>
+    </main>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
+import { 
+  Search, 
+  ShoppingBag, 
+  Plus, 
+  X, 
+  ShoppingCart, 
+  Trash2, 
+  SearchX 
+} from '@lucide/vue'
 
-// 模拟商品数据
-const products = ref([
-  { id: 1, name: '极简机械键盘', description: '84键紧凑布局，红轴', price: 299.00 },
-  { id: 2, name: '无线办公鼠标', description: '静音按键，人体工学设计', price: 89.00 },
-  { id: 3, name: '高清显示器', description: '27英寸 4K分辨率', price: 1299.00 },
-  { id: 4, name: '桌面收纳架', description: '实木材质，双层结构', price: 45.00 },
-  { id: 5, name: '铝合金笔记本支架', description: '折叠便携，多档调节', price: 68.00 },
-  { id: 6, name: '桌面拾音氛围灯', description: 'RGB色彩，支持音频同步', price: 128.00 }
-])
-
-// 购物车状态
+// 状态管理
+const products = ref([])
 const cart = ref([])
+const searchQuery = ref('')
+const isCartOpen = ref(true)
 const isProcessing = ref(false)
 
-// 添加到购物车
+// 图片加载失败处理
+const PLACEHOLDER_IMAGE = 'https://images.unsplash.com/photo-1560393464-5c69a73c5770?auto=format&fit=crop&q=80&w=400'
+const handleImageError = (e) => {
+  e.target.src = PLACEHOLDER_IMAGE
+}
+
+// 获取商品列表
+const fetchProducts = async () => {
+  try {
+    const response = await fetch('http://localhost:3000/api/products')
+    if (response.ok) {
+      products.value = await response.json()
+    }
+  } catch (e) {
+    console.error('获取商品列表失败:', e)
+    // 降级使用初始数据（开发环境）
+    products.value = [
+      { id: '1', name: '极简机械键盘', description: '84键紧凑布局，红轴', priceCents: 29900, stock: 99, imageUrl: 'https://images.unsplash.com/photo-1511467687858-23d96c32e4ae?auto=format&fit=crop&q=80&w=800' },
+      { id: '2', name: '无线办公鼠标', description: '静音按键，人体工学设计', priceCents: 8900, stock: 99, imageUrl: 'https://images.unsplash.com/photo-1527864550417-7fd91fc51a46?auto=format&fit=crop&q=80&w=800' },
+      { id: '3', name: '高清显示器', description: '27英寸 4K分辨率', priceCents: 129900, stock: 99, imageUrl: 'https://images.unsplash.com/photo-1527443224154-c4a3942d3acf?auto=format&fit=crop&q=80&w=800' },
+      { id: '4', name: '桌面收纳架', description: '实木材质，双层结构', priceCents: 4500, stock: 99, imageUrl: 'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?auto=format&fit=crop&q=80&w=800' },
+      { id: '5', name: '铝合金笔记本支架', description: '折叠便携，多档调节', priceCents: 6800, stock: 99, imageUrl: 'https://images.unsplash.com/photo-1527443154391-507e9dc6c5cc?auto=format&fit=crop&q=80&w=800' },
+      { id: '6', name: '桌面拾音氛围灯', description: 'RGB色彩，支持音频同步', priceCents: 12800, stock: 99, imageUrl: 'https://images.unsplash.com/photo-1550745165-9bc0b252728f?auto=format&fit=crop&q=80&w=800' }
+    ]
+  }
+}
+
+// 搜索过滤逻辑
+const filteredProducts = computed(() => {
+  if (!searchQuery.value.trim()) return products.value
+  const query = searchQuery.value.toLowerCase().trim()
+  return products.value.filter(p => 
+    p.name.toLowerCase().includes(query) || 
+    p.description.toLowerCase().includes(query)
+  )
+})
+
+// 购物车逻辑
+const cartTotalItems = computed(() => cart.value.reduce((total, item) => total + item.quantity, 0))
+const cartTotalPrice = computed(() => cart.value.reduce((total, item) => total + item.priceCents * item.quantity, 0))
+
 const addToCart = async (product) => {
   try {
-    // 同步到后端
     const response = await fetch('http://localhost:3000/api/cart/items', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        productId: String(product.id),
-        quantity: 1
-      })
+      body: JSON.stringify({ productId: String(product.id), quantity: 1 })
     })
 
     if (!response.ok) {
@@ -85,24 +192,25 @@ const addToCart = async (product) => {
       throw new Error(err.message || '同步失败')
     }
 
-    // 更新本地状态
     const existingItem = cart.value.find(item => item.id === product.id)
     if (existingItem) {
       existingItem.quantity++
     } else {
-      cart.value.push({
-        id: product.id,
-        name: product.name,
-        price: product.price,
-        quantity: 1
-      })
+      cart.value.push({ ...product, quantity: 1 })
     }
+    isCartOpen.value = true
   } catch (e) {
-    alert(`加入购物车失败: ${e.message}`)
+    console.error('加入购物车失败:', e)
+    // 离线模式处理
+    const existingItem = cart.value.find(item => item.id === product.id)
+    if (existingItem) {
+      existingItem.quantity++
+    } else {
+      cart.value.push({ ...product, quantity: 1 })
+    }
   }
 }
 
-// 从购物车移除（减少数量或直接移除）
 const removeFromCart = (productId) => {
   const index = cart.value.findIndex(item => item.id === productId)
   if (index !== -1) {
@@ -114,30 +222,20 @@ const removeFromCart = (productId) => {
   }
 }
 
-// 计算总价
-const cartTotal = computed(() => {
-  return cart.value.reduce((total, item) => total + item.price * item.quantity, 0)
-})
-
-// 结算方法
 const checkout = async () => {
   if (cart.value.length === 0) return
-
   isProcessing.value = true
   try {
-    // 假设后端运行在 3000 端口
     const response = await fetch('http://localhost:3000/api/checkout', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ userId: 'user_dev' })
     })
 
     if (response.ok) {
       const order = await response.json()
       alert(`结算成功！订单号: ${order.id}`)
-      cart.value = [] // 清空购物车
+      cart.value = []
     } else {
       const error = await response.json()
       alert(`结算失败: ${error.message || '未知错误'}`)
@@ -148,224 +246,16 @@ const checkout = async () => {
     isProcessing.value = false
   }
 }
+
+onMounted(fetchProducts)
 </script>
 
-<style scoped>
-/* 全局容器：单屏布局，去除多余留白 */
-.app-container {
-  display: flex;
-  height: 100vh;
-  width: 100%;
-  background-color: #f5f5f5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  box-sizing: border-box;
-  overflow: hidden;
+<style>
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
-
-/* 通用标题 */
-.section-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  color: #111;
-  margin: 0 0 20px 0;
-  padding-bottom: 12px;
-  border-bottom: 1px solid #e0e0e0;
-}
-
-/* 左侧商品区 */
-.product-section {
-  flex: 2;
-  padding: 24px;
-  background-color: #f9f9f9;
-  border-right: 1px solid #e0e0e0;
-  overflow-y: auto;
-}
-
-.product-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 16px;
-}
-
-/* 极简卡片设计：无阴影，1px边框，纯色背景 */
-.product-card {
-  background-color: #ffffff;
-  border: 1px solid #e0e0e0;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-.product-info {
-  margin-bottom: 16px;
-}
-
-.product-name {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #111;
-  margin: 0 0 8px 0;
-}
-
-.product-desc {
-  font-size: 0.85rem;
-  color: #666;
-  margin: 0 0 12px 0;
-  line-height: 1.4;
-}
-
-.product-price {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: #111;
-}
-
-/* 按钮设计：扁平，直角，纯色 */
-.action-btn {
-  background-color: #111;
-  color: #fff;
-  border: 1px solid #111;
-  padding: 8px 12px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  width: 100%;
-}
-
-.action-btn:hover {
-  background-color: #333;
-}
-
-/* 右侧购物车区 */
-.cart-section {
-  flex: 1;
-  min-width: 320px;
-  max-width: 400px;
-  padding: 24px;
-  background-color: #ffffff;
-  display: flex;
-  flex-direction: column;
-}
-
-.empty-cart {
-  color: #999;
-  font-size: 0.9rem;
-  text-align: center;
-  margin-top: 40px;
-}
-
-.cart-items {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  overflow: hidden;
-}
-
-.cart-list {
-  flex: 1;
-  overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-/* 购物车商品项：同样遵守极简风格 */
-.cart-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 12px;
-  border: 1px solid #e0e0e0;
-  background-color: #fafafa;
-}
-
-.cart-item-info {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.cart-item-name {
-  margin: 0;
-  font-size: 0.95rem;
-  color: #111;
-}
-
-.cart-item-meta {
-  font-size: 0.85rem;
-  color: #666;
-  display: flex;
-  gap: 12px;
-}
-
-.remove-btn {
-  background: transparent;
-  color: #666;
-  border: 1px solid #ccc;
-  padding: 4px 8px;
-  font-size: 0.8rem;
-  cursor: pointer;
-}
-
-.remove-btn:hover {
-  background: #eee;
-  color: #111;
-}
-
-/* 结算区域 */
-.cart-summary {
-  margin-top: 24px;
-  padding-top: 16px;
-  border-top: 1px solid #e0e0e0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.summary-label {
-  font-size: 1rem;
-  color: #333;
-}
-
-.summary-total {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #111;
-}
-
-.checkout-btn {
-  margin-top: 16px;
-  background-color: #111;
-  color: #fff;
-  border: none;
-  padding: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  width: 100%;
-}
-
-.checkout-btn:disabled {
-  background-color: #999;
-  cursor: not-allowed;
-}
-
-.checkout-btn:hover:not(:disabled) {
-  background-color: #333;
-}
-
-/* 隐藏滚动条让视觉更干净 */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-::-webkit-scrollbar-thumb {
-  background: #ccc;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #999;
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 </style>

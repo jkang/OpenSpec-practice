@@ -10,10 +10,16 @@
   },
   "type": "module",
   "dependencies": {
+    "@lucide/vue": "^1.31.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "lucide-vue-next": "^1.0.0",
     "vue": "^3.5.41"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.8",
+    "autoprefixer": "^10.5.4",
+    "postcss": "^8.5.26",
+    "tailwindcss": "^4.3.3",
     "vite": "^8.2.1"
   }
 }

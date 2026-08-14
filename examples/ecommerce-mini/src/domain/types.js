@@ -4,6 +4,7 @@
  * @property {string} name
  * @property {number} priceCents
  * @property {number} stock
+ * @property {string} [imageUrl]
  */
 
 /**

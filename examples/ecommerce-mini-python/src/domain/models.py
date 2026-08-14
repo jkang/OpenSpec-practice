@@ -6,6 +6,7 @@ class Product(BaseModel):
     name: str
     price_cents: int = Field(..., ge=0, alias="priceCents")
     stock: int = Field(..., ge=0)
+    image_url: Optional[str] = Field(None, alias="imageUrl")
 
 class CartItem(BaseModel):
     id: str
