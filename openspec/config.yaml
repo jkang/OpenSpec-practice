@@ -1,5 +1,5 @@
 schema: spec-driven
-schemas_dir: ./schemas
+schemas_dir: schemas
 
 # === v1.5.0: Store 指针 (可选) ===
 # 当规划需要跨多个代码仓库时，可将规划集中在一个独立的 store 仓库中。
