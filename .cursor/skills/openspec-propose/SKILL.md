@@ -136,6 +136,7 @@ After completing all artifacts, summarize:
 - The schema defines what each artifact should contain - follow it
 - Read dependency artifacts for context before creating new ones
 - Use `template` as the structure for your output file - fill in its sections
+- **E2E 优先**: 在生成 `tasks.md` 时，必须包含跨端全链路验证 (E2E) 任务，以避免前后端同步和 CORS 等配置被遗漏
 - **IMPORTANT**: `context` and `rules` are constraints for YOU, not content for the file
   - Do NOT copy `<context>`, `<rules>`, `<project_context>` blocks into the artifact
   - These guide what you write, but should never appear in the output

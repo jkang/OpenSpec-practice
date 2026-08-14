@@ -1,0 +1,37 @@
+---
+name: "openspec-prototype"
+description: "生成符合 Modern Flat 规范的交互式企业级 Vue 3 原型。在 OpenSpec 提议阶段生成 prototype 产物时调用。"
+---
+
+# OpenSpec Prototype 设计专家
+
+该技能专门用于为 OpenSpec 工作流生成高质量、可交互的前端原型。它严格遵守“现代扁平化 (Modern Flat)”美学，并针对企业级应用进行了优化。
+
+## 设计原则
+
+### 1. 视觉风格 (Modern Flat)
+- **1px 边框**: 所有的卡片、按钮和输入框必须使用 1px 实线边框（例如 Tailwind 的 `border-border`）。
+- **纯色背景**: 使用中性色调（如 Slate, Zinc, Neutral）。禁止使用渐变。
+- **严禁阴影**: 不得使用任何形式的 `shadow-*` 类。
+- **内容驱动**: 布局应紧凑，尺寸由内容决定，避免大面积的空洞留白。
+
+### 2. 技术栈要求
+- **Vue 3 (CDN)**: `https://unpkg.com/vue@3/dist/vue.global.js`
+- **Tailwind CSS (CDN)**: `https://cdn.tailwindcss.com`
+- **Shadcn UI 模式**: 使用 Tailwind 直接实现类似 Shadcn 的组件（Button, Card, Input, Dialog, Table）。
+- **Lucide 图标**: `https://unpkg.com/lucide@latest`
+
+### 3. 企业级交互规范
+- **单文件原型**: 所有的 HTML, CSS, JS 必须合并在一个 `.html` 文件中。
+- **状态驱动**: 使用 Vue 的 `ref` 或 `reactive` 管理页面状态（如 Modal 开关、列表更新、表单校验）。
+- **极简反馈**: 隐藏状态勾选标记和复杂的进度条，仅在必要时提供最轻量化的视觉反馈。
+
+## 任务执行指南
+
+1. **读取上下文**: 在生成原型前，必须阅读 `proposal.md` 以确保功能覆盖完整。
+2. **生成 HTML**: 
+   - 包含完整的 Tailwind 配置（颜色、边框宽度等）。
+   - 编写具备响应式状态的 Vue 应用代码。
+   - 实现关键交互逻辑（点击、切换、过滤）。
+3. **输出路径**: 默认输出到 `prototypes/<capability-path>.html`。
+4. **嵌入规范**: 生成后，将代码块以 `<details>` 标签形式提供，以便后续步骤嵌入 `spec.md`。

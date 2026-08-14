@@ -33,31 +33,13 @@ artifacts:
     description: 用于前端验证的交互式 UI/UX 原型
     template: prototype.html
     instruction: |
-      为提案中定义的系统能力创建一个交互式的 HTML 原型。
+      调用 `openspec-prototype` 技能为提案中定义的系统能力创建一个交互式的 HTML 原型。
       
       在进入技术设计阶段之前，该原型将作为 UI/UX 设计的唯一事实来源 (Single Source of Truth)。
       
       为每个涉及前端变更的能力创建一个 HTML 文件：
       - 输出路径使用 `prototypes/<capability-path>.html`。
       - 如果该能力不需要前端变更，请在工作流中明确说明，并跳过生成 HTML。
-      
-      技术要求：
-      - 使用内嵌 CSS 和 JS（或使用 CDN 链接）的单文件 HTML。
-      - 使用 Vue 3（通过 CDN `https://unpkg.com/vue@3/dist/vue.global.js`）实现交互功能。
-      - 使用 Tailwind CSS（通过 CDN `https://cdn.tailwindcss.com`）进行样式开发。
-      - 采用 Shadcn UI 设计模式（直接使用 Tailwind 类名来实现组件样式）。
-      - 使用 Lucide 图标库（通过 CDN `https://unpkg.com/lucide@latest`）。
-      
-      设计系统与 UI 规范（现代企业级应用）：
-      - **布局 (Layout)**: 采用单屏紧凑布局，尺寸由内容决定。
-      - **视觉美学 (Aesthetic)**: “现代扁平化 (Modern Flat)” - 使用纯色背景，1px 边框（例如使用 Shadcn 的 `border-border`）。
-      - **禁止使用的元素**: 严禁使用投影 (drop shadows)、严禁使用渐变 (gradients)、严禁使用装饰性线条。
-      - **组件 (Components)**: 使用类似 Shadcn UI 风格的组件（如按钮、卡片、输入框、对话框）。
-      - **色彩 (Colors)**: 使用标准的企业级调色板（布局使用 slate/zinc/neutral 中性色，主要操作使用 blue/indigo）。
-      - **反馈机制 (Feedback)**: 极简反馈 - 尽可能隐藏进度指示器或状态勾选标记，保持 UI 界面整洁。
-      - **交互性 (Interactivity)**: 原型必须是可交互的。点击操作应触发状态变更（例如：打开模态框、更新列表、切换状态），必须使用 Vue 的响应式变量来实现。
-      
-      确保生成的原型可以直接在浏览器中打开，或者通过 `OpenPreview` 进行即时验证。
     requires:
       - proposal
 
