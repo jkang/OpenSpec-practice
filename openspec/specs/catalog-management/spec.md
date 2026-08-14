@@ -8,18 +8,18 @@
 
 ### Requirement: 商品列表查询
 
-系统 SHALL 提供商品列表查询接口。客户端可通过可选的 `name` 查询参数按名称模糊过滤商品；未提供 `name` 参数时，返回所有可用商品。
+系统 SHALL 提供商品列表查询接口。返回的商品对象 SHALL 包含 `imageUrl` 字段以供前端展示。客户端可通过可选的 `name` 查询参数按名称模糊过滤商品；未提供 `name` 参数时，返回所有可用商品。
 
 **Priority**: P0 (Critical)
 
-**Rationale**: 商品浏览是电商系统的核心入口功能，用户必须能够查看可购买的商品。随着商品数量增长，用户需要按名称定位目标商品，同时保持全量列表的向后兼容。
+**Rationale**: 确保前端能够获取并展示商品的视觉信息，这是提升专业感的基础。商品浏览是电商系统的核心入口功能，用户必须能够查看可购买的商品。
 
 #### Scenario: 获取所有商品（无过滤）
 
-Given 系统中存在商品数据
-When 用户请求 GET /api/products（不带 name 参数）
-Then 返回状态码 200
-And 返回商品数组 Product[]，包含所有可用商品
+- **GIVEN** 系统中存在包含图片信息的商品数据
+- **WHEN** 用户请求 GET /api/products（不带 name 参数）
+- **THEN** 返回状态码 200
+- **AND** 返回商品数组 Product[]，其中每个商品均包含 `imageUrl` 字段
 
 #### Scenario: 按名称模糊搜索
 
@@ -77,18 +77,18 @@ And 返回商品数组 Product[]，保持自然顺序（忽略无效的 sort 值
 
 ### Requirement: 商品上架
 
-系统 SHALL 支持商品上架功能，接收商品信息并创建新商品记录。
+系统 SHALL 支持商品上架功能，接收包含图片链接的商品信息并创建新商品记录。
 
-**Priority**: P2 (Low)
+**Priority**: P1 (High)
 
-**Rationale**: 便于测试数据初始化和演示，生产环境可替换为后台管理系统。
+**Rationale**: 完善商品管理闭环，支持从源头录入图片信息。便于测试数据初始化和演示。
 
 #### Scenario: 上架新商品
 
-Given 管理员需要添加新商品
-When 发送 POST /api/products 携带商品信息 { name, priceCents, stock }
-Then 返回状态码 201
-And 返回创建成功的商品对象 Product
+- **GIVEN** 管理员需要添加带图片的商品
+- **WHEN** 发送 POST /api/products 携带商品信息 { name, priceCents, stock, imageUrl }
+- **THEN** 返回状态码 201
+- **AND** 返回包含 `imageUrl` 的商品对象 Product
 
 #### Scenario: 自动生成商品 ID
 
